@@ -1,6 +1,6 @@
 {
   "name": "node-pkill-process",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A CLI tool to list and kill background Node.js processes",
   "main": "src/index.js",
   "bin": {
@@ -25,11 +25,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/apipemc/node-process-manager.git"
+    "url": "https://github.com/apipemc/node-pkill-process.git"
   },
-  "homepage": "https://github.com/apipemc/node-process-manager#readme",
+  "homepage": "https://github.com/apipemc/node-pkill-process#readme",
   "bugs": {
-    "url": "https://github.com/apipemc/node-process-manager/issues"
+    "url": "https://github.com/apipemc/node-pkill-process/issues"
   },
   "dependencies": {
     "chalk": "^4.1.2",
