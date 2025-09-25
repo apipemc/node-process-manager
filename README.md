@@ -1,6 +1,10 @@
-# Node Process Manager
+# Node PKill Process
 
 A CLI tool to list and kill Node.js processes running in the background.
+
+## Origin
+
+This project was initially created with the assistance of Qwen Code, an AI coding assistant, during a live coding session. The tool has been developed to help users manage background Node.js processes efficiently.
 
 ## Installation
 
@@ -26,25 +30,25 @@ node src/index.js
 Install globally to use as a command-line shortcut from anywhere:
 
 ```bash
-npm install -g node-process-manager
+npm install -g node-pkill-process
 ```
 
-After installation, you can use the tool with the `process-manager` command from any directory:
+After installation, you can use the tool with the `pkill-process` command from any directory:
 
 ```bash
-process-manager
+pkill-process
 ```
 
 To uninstall globally:
 ```bash
-npm uninstall -g node-process-manager
+npm uninstall -g node-pkill-process
 ```
 
 ### One-time Usage with npx (No Installation Required)
 You can also run the tool without installing it using npx:
 
 ```bash
-npx node-process-manager
+npx node-pkill-process
 ```
 
 This downloads and runs the package instantly without requiring a local installation.
@@ -64,4 +68,4 @@ This tool is designed to help you manage background Node.js processes. Be carefu
 
 ## License
 
-MIT# node-process-manager
+MIT

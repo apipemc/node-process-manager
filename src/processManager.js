@@ -5,8 +5,7 @@ const execPromise = util.promisify(exec);
 
 async function listNodeProcesses() {
   try {
-    const command =
-      'ps aux | grep node | grep -v grep | grep -v process-manager | grep -v "node-process-manager" | grep -v "npm" | grep -v "yarn"';
+    const command = 'ps aux | grep node | grep -v grep | grep -v pkill-process | grep -v "node-pkill-process" | grep -v "npm" | grep -v "yarn"';
 
     const { stdout } = await execPromise(command);
 
