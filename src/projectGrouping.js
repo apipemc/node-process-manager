@@ -1,6 +1,46 @@
 const path = require("path");
+const fs = require("fs");
+const pathModule = require("path");
+
+// Load project configuration
+let projectConfig;
+
+try {
+  const configPath = pathModule.join(__dirname, "../config/projectConfig.json");
+  if (fs.existsSync(configPath)) {
+    projectConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  } else {
+    projectConfig = {
+      projectMappings: {},
+      blacklist: [],
+      waitlist: []
+    };
+  }
+} catch (error) {
+  console.warn("Could not load project configuration file:", error.message);
+  projectConfig = {
+    projectMappings: {},
+    blacklist: [],
+    waitlist: []
+  };
+}
 
 function extractProjectName(command) {
+  // Check blacklist first
+  for (const blacklisted of projectConfig.blacklist) {
+    if (command.includes(blacklisted)) {
+      return null; // Skip blacklisted processes
+    }
+  }
+
+  // Check project mappings
+  for (const [projectName, projectInfo] of Object.entries(projectConfig.projectMappings)) {
+    for (const pattern of projectInfo.patterns) {
+      if (command.includes(pattern)) {
+        return projectInfo.displayName || projectName;
+      }
+    }
+  }
   if (
     command.includes("Visual Studio Code") ||
     command.includes("Code Helper")
@@ -32,6 +72,11 @@ function extractProjectName(command) {
             if (isValidProjectName(pathParts[i])) {
               return `node-${pathParts[i]}`;
             }
+          }
+          // If we couldn't determine project name from path, try to get it from package.json
+          const projectFromPackageJson = getProjectNameFromPackageJson(file);
+          if (projectFromPackageJson) {
+            return projectFromPackageJson;
           }
           return "node-project";
         } else {
@@ -224,7 +269,53 @@ function extractProjectName(command) {
     }
   }
 
+  // As a fallback, try to determine project name from package.json if command contains a file path
+  for (const part of command.split(" ")) {
+    if (part.includes("/") && !part.startsWith("http")) {
+      const projectFromPackageJson = getProjectNameFromPackageJson(part);
+      if (projectFromPackageJson) {
+        return projectFromPackageJson;
+      }
+    }
+  }
+
   return "other-processes";
+}
+
+/**
+ * Attempts to read the package.json file from the same directory as the given file path
+ * and return the project name from the 'name' field.
+ * @param {string} filePath - Path to a JavaScript file that might belong to a Node.js project
+ * @returns {string|null} - Project name from package.json or null if not found
+ */
+function getProjectNameFromPackageJson(filePath) {
+  try {
+    // Get the absolute path of the directory containing the file
+    const fileDir = path.dirname(path.resolve(filePath));
+    
+    // Search up the directory tree for a package.json file
+    let currentDir = fileDir;
+    
+    while (currentDir !== path.dirname(currentDir)) { // Stop when reaching the root directory
+      const packageJsonPath = path.join(currentDir, "package.json");
+      
+      if (fs.existsSync(packageJsonPath)) {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+        
+        if (packageJson.name && isValidProjectName(packageJson.name)) {
+          return packageJson.name;
+        }
+        break; // Stop searching once we find a package.json file
+      }
+      
+      currentDir = path.dirname(currentDir);
+    }
+    
+    return null;
+  } catch (error) {
+    // If any error occurs (e.g., no permission, invalid JSON), continue with other methods
+    return null;
+  }
 }
 
 function isValidProjectName(name) {
@@ -309,14 +400,40 @@ function groupProcessesByProject(processes) {
   processes.forEach((process) => {
     const projectName = extractProjectName(process.command);
 
-    if (!grouped[projectName]) {
-      grouped[projectName] = [];
+    // Skip blacklisted processes (they return null)
+    if (projectName === null) {
+      return;
     }
 
-    grouped[projectName].push(process);
+    if (!grouped[projectName]) {
+      grouped[projectName] = {
+        processes: [],
+        totalCpu: 0,
+        totalMemory: 0
+      };
+    }
+
+    // Add process to the group
+    grouped[projectName].processes.push(process);
+
+    // Add CPU and memory to the group totals
+    const cpu = parseFloat(process.cpu) || 0;
+    const memory = parseFloat(process.memory) || 0;
+    
+    grouped[projectName].totalCpu += cpu;
+    grouped[projectName].totalMemory += memory;
   });
 
-  return grouped;
+  // Convert grouped object to the expected format (array of processes for each project)
+  const result = {};
+  for (const [projectName, groupData] of Object.entries(grouped)) {
+    result[projectName] = groupData.processes;
+    // Add the aggregated data to the group for display purposes
+    result[projectName].totalCpu = groupData.totalCpu.toFixed(1);
+    result[projectName].totalMemory = groupData.totalMemory.toFixed(1);
+  }
+
+  return result;
 }
 
 module.exports = {

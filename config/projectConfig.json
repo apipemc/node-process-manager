@@ -1,0 +1,65 @@
+{
+  "projectMappings": {
+    "LM Studio": {
+      "patterns": [
+        "LM Studio Helper",
+        "LM Studio"
+      ],
+      "displayName": "LM Studio"
+    },
+    "Visual Studio Code": {
+      "patterns": [
+        "Code Helper",
+        "VSCode",
+        "Visual Studio Code"
+      ],
+      "displayName": "VS Code"
+    },
+    "Slack": {
+      "patterns": [
+        "Slack Helper",
+        "Slack"
+      ],
+      "displayName": "Slack"
+    },
+    "Figma": {
+      "patterns": [
+        "Figma Helper",
+        "Figma"
+      ],
+      "displayName": "Figma"
+    },
+    "Electron Apps": {
+      "patterns": [
+        "Helper",
+        "Electron"
+      ],
+      "displayName": "Electron App"
+    }
+  },
+  "blacklist": [
+    "npm",
+    "yarn",
+    "process-manager",
+    "node-pkill-process",
+    "grep",
+    "ps",
+    "bash",
+    "zsh",
+    "sh",
+    "fish",
+    "tmux",
+    "screen",
+    "ssh",
+    "top",
+    "htop",
+    "lsof",
+    "kill",
+    "killall",
+    "pkill"
+  ],
+  "waitlist": [
+    "important-process",
+    "critical-service"
+  ]
+}

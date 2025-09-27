@@ -40,18 +40,6 @@ async function main() {
       console.log(chalk.yellow("❌ Operation cancelled"));
       return;
     } else if (groupingChoice === "individual") {
-      for (let i = 0; i < processes.length; i++) {
-        console.log(
-          `${i + 1}. PID: ${chalk.yellow(
-            processes[i].pid
-          )} | Command: ${chalk.cyan(processes[i].command)} | CPU: ${
-            processes[i].cpu
-          }% | MEM: ${processes[i].memory}%`
-        );
-      }
-
-      console.log("\n");
-
       const selectedProcess = await selectProcess(processes);
 
       if (selectedProcess) {
@@ -83,20 +71,36 @@ async function main() {
 
       console.log(chalk.green(`📦 Processes grouped by project:`));
       for (const [project, procs] of Object.entries(groupedProcesses)) {
+        // Display aggregated CPU and memory if available
+        const totalCpu = procs.totalCpu ? procs.totalCpu : "0.0";
+        const totalMemory = procs.totalMemory ? procs.totalMemory : "0.0";
+        
         console.log(
-          `  ${chalk.cyan(project)}: ${procs.length} process${
-            procs.length !== 1 ? "es" : ""
-          }`
+          `  ${chalk.cyan(project)}: ${procs.length} process${procs.length !== 1 ? "es" : ""} | CPU: ${totalCpu}% | MEM: ${totalMemory}%`
         );
+        
+        // Create a table for processes in the group
+        const Table = require('cli-table3');
+        const procTable = new Table({
+          head: ['PID', 'CPU%', 'MEM%', 'Command'],
+          colWidths: [10, 8, 8, 60], // Adjust column widths as needed
+          style: {
+            head: ['grey', 'bold'],
+            border: ['grey']
+          },
+          wordWrap: true
+        });
+
         for (const proc of procs) {
-          console.log(
-            `    - PID: ${chalk.yellow(
-              proc.pid
-            )} | Command: ${proc.command.substring(0, 80)}${
-              proc.command.length > 80 ? "..." : ""
-            }`
-          );
+          procTable.push([
+            proc.pid,
+            `${proc.cpu}%`,
+            `${proc.memory}%`,
+            proc.command.length > 55 ? proc.command.substring(0, 52) + '...' : proc.command
+          ]);
         }
+
+        console.log(procTable.toString());
         console.log("");
       }
 

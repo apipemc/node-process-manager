@@ -8,13 +8,20 @@ async function selectProjectAction(groupedProcesses) {
     return null;
   }
 
-  const projectChoices = projectNames.map((projectName) => ({
-    name: `${projectName} (${groupedProcesses[projectName].length} process${
-      groupedProcesses[projectName].length !== 1 ? "es" : ""
-    })`,
-    value: projectName,
-    short: projectName,
-  }));
+  const projectChoices = projectNames.map((projectName) => {
+    const projectGroup = groupedProcesses[projectName];
+    const processCount = projectGroup.length;
+    
+    // Get aggregated CPU and memory if available
+    const totalCpu = projectGroup.totalCpu || "0.0";
+    const totalMemory = projectGroup.totalMemory || "0.0";
+    
+    return {
+      name: `${projectName} (${processCount} process${processCount !== 1 ? "es" : ""}) | CPU: ${totalCpu}% | MEM: ${totalMemory}%`,
+      value: projectName,
+      short: projectName,
+    };
+  });
 
   projectChoices.push(new inquirer.Separator());
   projectChoices.push({ name: "Cancel", value: null, short: "Cancel" });
