@@ -61,6 +61,8 @@ This downloads and runs the package instantly without requiring a local installa
 - Group processes by project and terminate all processes from the same project
 - Safely terminates processes with SIGTERM, and if necessary with SIGKILL
 - Choose between individual process management or project-based grouping
+- Configurable project mappings, blacklists, and whitelists through configuration file
+- Support for complex applications with multiple related processes (e.g., LM Studio, VS Code, Electron apps)
 
 ## Disclaimer
 

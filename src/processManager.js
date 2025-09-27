@@ -1,11 +1,46 @@
 const { exec } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 const util = require("util");
 
 const execPromise = util.promisify(exec);
 
+// Load project configuration
+let projectConfig = {
+  projectMappings: {},
+  blacklist: [],
+  waitlist: []
+};
+
+try {
+  const configPath = path.join(__dirname, "../config/projectConfig.json");
+  if (fs.existsSync(configPath)) {
+    projectConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  }
+} catch (error) {
+  console.warn("Could not load project configuration file:", error.message);
+}
+
+/**
+ * Checks if a command should be filtered out based on the configuration
+ * @param {string} command - The command to check
+ * @returns {boolean} - true if the command should be filtered out, false otherwise
+ */
+function shouldFilterCommand(command) {
+  // Check against blacklist
+  for (const blacklisted of projectConfig.blacklist) {
+    if (command.includes(blacklisted)) {
+      return true; // Skip blacklisted processes
+    }
+  }
+  
+  return false;
+}
+
 async function listNodeProcesses() {
   try {
-    const command = 'ps aux | grep node | grep -v grep | grep -v pkill-process | grep -v "node-pkill-process" | grep -v "npm" | grep -v "yarn"';
+    // Include additional grep filters based on configuration
+    const command = 'ps aux | grep node | grep -v grep | grep -v pkill-process | grep -v "node-pkill-process"';
 
     const { stdout } = await execPromise(command);
 
@@ -26,6 +61,11 @@ async function listNodeProcesses() {
 
         const pid = parts[1];
         const command = parts.slice(10).join(" ");
+
+        // Filter out blacklisted processes
+        if (shouldFilterCommand(command)) {
+          return null;
+        }
 
         const pidNum = parseInt(pid);
         if (isNaN(pidNum)) {
